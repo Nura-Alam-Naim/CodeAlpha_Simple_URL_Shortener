@@ -8,9 +8,11 @@ async function testFlow() {
     try {
         // 1. Shorten a URL
         console.log('\n[1] Testing POST /api/shorten');
+        const randomString = Math.random().toString(36).substring(2, 7);
+        const testCode = `test${randomString}`;
         const shortenRes = await axios.post(`${API_URL}/shorten`, {
             url: 'https://github.com/nuraalamnaim',
-            customCode: 'naimgit'
+            customCode: testCode
         });
         console.log('Success!', shortenRes.data);
         const { shortCode } = shortenRes.data;

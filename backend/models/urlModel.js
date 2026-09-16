@@ -39,6 +39,20 @@ const UrlModel = {
         );
     },
 
+    async activate(id) {
+        await pool.query(
+            'UPDATE urls SET is_active = TRUE WHERE id = ?',
+            [id]
+        );
+    },
+
+    async hardDelete(id) {
+        await pool.query(
+            'DELETE FROM urls WHERE id = ?',
+            [id]
+        );
+    },
+
     async logClick(urlId, ipAddress, userAgent) {
         await pool.query(
             'INSERT INTO click_logs (url_id, ip_address, user_agent) VALUES (?, ?, ?)',

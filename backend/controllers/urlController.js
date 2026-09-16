@@ -140,9 +140,45 @@ const deleteUrl = async (req, res, next) => {
             throw new Error('URL not found');
         }
 
-        await UrlModel.deactivate(urlEntry.id);
+        await UrlModel.hardDelete(urlEntry.id);
 
         res.status(200).json({ message: 'URL deleted successfully' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const deactivateUrl = async (req, res, next) => {
+    try {
+        const { shortCode } = req.params;
+        const urlEntry = await UrlModel.findByShortCode(shortCode);
+
+        if (!urlEntry) {
+            res.status(404);
+            throw new Error('URL not found');
+        }
+
+        await UrlModel.deactivate(urlEntry.id);
+
+        res.status(200).json({ message: 'URL deactivated successfully' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const activateUrl = async (req, res, next) => {
+    try {
+        const { shortCode } = req.params;
+        const urlEntry = await UrlModel.findByShortCode(shortCode);
+
+        if (!urlEntry) {
+            res.status(404);
+            throw new Error('URL not found');
+        }
+
+        await UrlModel.activate(urlEntry.id);
+
+        res.status(200).json({ message: 'URL activated successfully' });
     } catch (error) {
         next(error);
     }
@@ -153,5 +189,7 @@ module.exports = {
     redirectUrl,
     getStats,
     getAllUrls,
-    deleteUrl
+    deleteUrl,
+    deactivateUrl,
+    activateUrl
 };

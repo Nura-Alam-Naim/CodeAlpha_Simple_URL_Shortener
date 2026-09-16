@@ -4,7 +4,9 @@ const {
     shortenUrl,
     getStats,
     getAllUrls,
-    deleteUrl
+    deleteUrl,
+    deactivateUrl,
+    activateUrl
 } = require('../controllers/urlController');
 const { validateUrlInput } = require('../middleware/validator');
 const shortenLimiter = require('../middleware/rateLimiter');
@@ -18,7 +20,13 @@ router.get('/urls', getAllUrls);
 // GET /api/stats/:shortCode
 router.get('/stats/:shortCode', getStats);
 
-// DELETE /api/urls/:shortCode
+// DELETE /api/urls/:shortCode (Hard Delete)
 router.delete('/urls/:shortCode', deleteUrl);
+
+// PUT /api/urls/:shortCode/deactivate
+router.put('/urls/:shortCode/deactivate', deactivateUrl);
+
+// PUT /api/urls/:shortCode/activate
+router.put('/urls/:shortCode/activate', activateUrl);
 
 module.exports = router;
