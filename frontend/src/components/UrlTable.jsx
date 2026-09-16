@@ -46,6 +46,21 @@ const UrlTable = ({ reloadTrigger }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page, debouncedSearch, reloadTrigger]);
 
+    // Auto-refresh data when window regains focus or periodically
+    useEffect(() => {
+        const handleFocus = () => fetchUrls();
+        window.addEventListener('focus', handleFocus);
+        
+        // Poll every 15 seconds
+        const interval = setInterval(fetchUrls, 15000);
+        
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+            clearInterval(interval);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [page, debouncedSearch]);
+
     const handleDelete = async (shortCode) => {
         if (!window.confirm('Are you sure you want to permanently delete this URL and all its analytics?')) return;
         
