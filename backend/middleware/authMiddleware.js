@@ -15,6 +15,7 @@ const protect = (req, res, next) => {
             
             next();
         } catch (error) {
+            console.error('JWT Verify Error:', error);
             res.status(401);
             next(new Error('Not authorized, token failed'));
         }
