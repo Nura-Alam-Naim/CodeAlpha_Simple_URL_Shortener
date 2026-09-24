@@ -5,9 +5,11 @@ const UrlModel = require('../models/urlModel');
 const shortenUrl = async (req, res, next) => {
     try {
         const { url, customCode, expiresInDays } = req.body;
+        const userId = req.user ? req.user.id : null;
+        const sessionId = !userId ? req.headers['x-session-id'] : null;
 
         // Check if there's already an active one for this exact url
-        const existingActive = await UrlModel.findByOriginalUrl(url);
+        const existingActive = await UrlModel.findByOriginalUrl(url, userId, sessionId);
         if (existingActive && !customCode) {
             // Generate QR Code
             const shortUrl = `${req.protocol}://${req.get('host')}/${existingActive.short_code}`;
@@ -46,7 +48,7 @@ const shortenUrl = async (req, res, next) => {
             expiresAt = date;
         }
 
-        await UrlModel.create(shortCode, url, expiresAt);
+        await UrlModel.create(shortCode, url, expiresAt, userId, sessionId);
 
         const shortUrl = `${req.protocol}://${req.get('host')}/${shortCode}`;
         const qrCode = await QRCode.toDataURL(shortUrl);
@@ -115,8 +117,10 @@ const getAllUrls = async (req, res, next) => {
         const limit = parseInt(req.query.limit) || 10;
         const search = req.query.search || '';
         const offset = (page - 1) * limit;
+        const userId = req.user ? req.user.id : null;
+        const sessionId = !userId ? req.headers['x-session-id'] : null;
 
-        const result = await UrlModel.getAll(limit, offset, search);
+        const result = await UrlModel.getAll(limit, offset, search, userId, sessionId);
 
         res.status(200).json({
             data: result.urls,
@@ -133,11 +137,19 @@ const getAllUrls = async (req, res, next) => {
 const deleteUrl = async (req, res, next) => {
     try {
         const { shortCode } = req.params;
+        const userId = req.user ? req.user.id : null;
+        const sessionId = !userId ? req.headers['x-session-id'] : null;
         const urlEntry = await UrlModel.findByShortCode(shortCode);
 
         if (!urlEntry) {
             res.status(404);
             throw new Error('URL not found');
+        }
+
+        const isOwner = (userId && urlEntry.user_id === userId) || (!userId && urlEntry.user_id === null && urlEntry.session_id === sessionId);
+        if (!isOwner) {
+            res.status(403);
+            throw new Error('Unauthorized');
         }
 
         await UrlModel.hardDelete(urlEntry.id);
@@ -151,11 +163,19 @@ const deleteUrl = async (req, res, next) => {
 const deactivateUrl = async (req, res, next) => {
     try {
         const { shortCode } = req.params;
+        const userId = req.user ? req.user.id : null;
+        const sessionId = !userId ? req.headers['x-session-id'] : null;
         const urlEntry = await UrlModel.findByShortCode(shortCode);
 
         if (!urlEntry) {
             res.status(404);
             throw new Error('URL not found');
+        }
+
+        const isOwner = (userId && urlEntry.user_id === userId) || (!userId && urlEntry.user_id === null && urlEntry.session_id === sessionId);
+        if (!isOwner) {
+            res.status(403);
+            throw new Error('Unauthorized');
         }
 
         await UrlModel.deactivate(urlEntry.id);
@@ -169,11 +189,19 @@ const deactivateUrl = async (req, res, next) => {
 const activateUrl = async (req, res, next) => {
     try {
         const { shortCode } = req.params;
+        const userId = req.user ? req.user.id : null;
+        const sessionId = !userId ? req.headers['x-session-id'] : null;
         const urlEntry = await UrlModel.findByShortCode(shortCode);
 
         if (!urlEntry) {
             res.status(404);
             throw new Error('URL not found');
+        }
+
+        const isOwner = (userId && urlEntry.user_id === userId) || (!userId && urlEntry.user_id === null && urlEntry.session_id === sessionId);
+        if (!isOwner) {
+            res.status(403);
+            throw new Error('Unauthorized');
         }
 
         await UrlModel.activate(urlEntry.id);

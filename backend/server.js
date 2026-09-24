@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const urlRoutes = require('./routes/urlRoutes');
+const authRoutes = require('./routes/authRoutes');
 const { redirectUrl } = require('./controllers/urlController');
 const errorHandler = require('./middleware/errorHandler');
 
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api', urlRoutes);
 
 // Redirect Route (must come after API routes to avoid capturing /api)

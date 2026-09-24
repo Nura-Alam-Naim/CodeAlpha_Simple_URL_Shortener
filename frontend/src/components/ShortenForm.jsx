@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, Wand2 } from 'lucide-react';
+import { AuthContext } from '../context/AuthContext';
 
 const ShortenForm = ({ onShorten, isLoading }) => {
     const [url, setUrl] = useState('');
     const [customCode, setCustomCode] = useState('');
     const [expiresInDays, setExpiresInDays] = useState('');
+    const { user } = useContext(AuthContext);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -14,6 +16,11 @@ const ShortenForm = ({ onShorten, isLoading }) => {
     return (
         <div className="glass-panel animate-fade-in">
             <h2>Shorten your link</h2>
+            {!user && (
+                <div style={{ padding: '0.75rem', backgroundColor: 'rgba(255, 165, 0, 0.1)', color: '#ffb347', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem', border: '1px solid rgba(255, 165, 0, 0.2)' }}>
+                    <strong>Note:</strong> You are a guest. URLs are only saved to this browser session and will be lost if you clear your data. <Link to="/login" style={{ color: '#ffb347', textDecoration: 'underline' }}>Login to save permanently.</Link>
+                </div>
+            )}
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
                     <label className="form-label" htmlFor="url">Destination URL *</label>

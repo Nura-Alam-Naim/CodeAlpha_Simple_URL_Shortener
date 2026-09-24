@@ -10,23 +10,24 @@ const {
 } = require('../controllers/urlController');
 const { validateUrlInput } = require('../middleware/validator');
 const shortenLimiter = require('../middleware/rateLimiter');
+const { protect, optionalProtect } = require('../middleware/authMiddleware');
 
 // POST /api/shorten
-router.post('/shorten', shortenLimiter, validateUrlInput, shortenUrl);
+router.post('/shorten', shortenLimiter, optionalProtect, validateUrlInput, shortenUrl);
 
 // GET /api/urls
-router.get('/urls', getAllUrls);
+router.get('/urls', optionalProtect, getAllUrls);
 
 // GET /api/stats/:shortCode
-router.get('/stats/:shortCode', getStats);
+router.get('/stats/:shortCode', optionalProtect, getStats);
 
 // DELETE /api/urls/:shortCode (Hard Delete)
-router.delete('/urls/:shortCode', deleteUrl);
+router.delete('/urls/:shortCode', optionalProtect, deleteUrl);
 
 // PUT /api/urls/:shortCode/deactivate
-router.put('/urls/:shortCode/deactivate', deactivateUrl);
+router.put('/urls/:shortCode/deactivate', optionalProtect, deactivateUrl);
 
 // PUT /api/urls/:shortCode/activate
-router.put('/urls/:shortCode/activate', activateUrl);
+router.put('/urls/:shortCode/activate', optionalProtect, activateUrl);
 
 module.exports = router;

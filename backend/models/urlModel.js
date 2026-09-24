@@ -1,10 +1,10 @@
 const pool = require('../config/db');
 
 const UrlModel = {
-    async findByOriginalUrl(originalUrl) {
+    async findByOriginalUrl(originalUrl, userId, sessionId) {
         const [rows] = await pool.query(
-            'SELECT * FROM urls WHERE original_url = ? AND is_active = TRUE AND (expires_at IS NULL OR expires_at > NOW())',
-            [originalUrl]
+            'SELECT * FROM urls WHERE original_url = ? AND is_active = TRUE AND (user_id <=> ? OR (user_id IS NULL AND session_id <=> ?)) AND (expires_at IS NULL OR expires_at > NOW())',
+            [originalUrl, userId, sessionId]
         );
         return rows[0];
     },
@@ -17,10 +17,10 @@ const UrlModel = {
         return rows[0];
     },
 
-    async create(shortCode, originalUrl, expiresAt) {
+    async create(shortCode, originalUrl, expiresAt, userId, sessionId) {
         const [result] = await pool.query(
-            'INSERT INTO urls (short_code, original_url, expires_at) VALUES (?, ?, ?)',
-            [shortCode, originalUrl, expiresAt]
+            'INSERT INTO urls (short_code, original_url, expires_at, user_id, session_id) VALUES (?, ?, ?, ?, ?)',
+            [shortCode, originalUrl, expiresAt, userId, sessionId]
         );
         return result.insertId;
     },
@@ -76,16 +76,22 @@ const UrlModel = {
         return { ...url, recent_logs: logRows };
     },
 
-    async getAll(limit, offset, search) {
-        let query = 'SELECT id, short_code, original_url, click_count, created_at, expires_at, is_active FROM urls';
-        let params = [];
-        let countQuery = 'SELECT COUNT(*) as total FROM urls';
+    async getAll(limit, offset, search, userId, sessionId) {
+        // If user is logged in, query by user_id. Otherwise query by session_id.
+        let condition = userId ? 'user_id = ?' : '(user_id IS NULL AND session_id = ?)';
+        let conditionParam = userId ? userId : sessionId;
+        
+        let query = `SELECT id, short_code, original_url, click_count, created_at, expires_at, is_active FROM urls WHERE ${condition}`;
+        let params = [conditionParam];
+        let countQuery = `SELECT COUNT(*) as total FROM urls WHERE ${condition}`;
+        let countParams = [conditionParam];
 
         if (search) {
-            query += ' WHERE original_url LIKE ? OR short_code LIKE ?';
-            countQuery += ' WHERE original_url LIKE ? OR short_code LIKE ?';
+            query += ' AND (original_url LIKE ? OR short_code LIKE ?)';
+            countQuery += ' AND (original_url LIKE ? OR short_code LIKE ?)';
             const searchTerm = `%${search}%`;
             params.push(searchTerm, searchTerm);
+            countParams.push(searchTerm, searchTerm);
         }
 
         query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
@@ -96,7 +102,6 @@ const UrlModel = {
         const [rows] = await pool.query(query, params);
         
         // Use a separate param array for countQuery as it doesn't need LIMIT/OFFSET
-        const countParams = search ? [`%${search}%`, `%${search}%`] : [];
         const [countRows] = await pool.query(countQuery, countParams);
 
         return {

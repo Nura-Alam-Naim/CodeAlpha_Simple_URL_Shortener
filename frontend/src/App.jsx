@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -6,49 +7,71 @@ import Header from './components/Header';
 import ShortenForm from './components/ShortenForm';
 import ResultCard from './components/ResultCard';
 import UrlTable from './components/UrlTable';
+import Login from './components/Login';
+import Register from './components/Register';
 import api from './api';
+import { AuthContext } from './context/AuthContext';
+
+const Home = () => {
+    const [result, setResult] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [reloadTrigger, setReloadTrigger] = useState(0);
+    const { user } = useContext(AuthContext);
+
+    const handleShorten = async (formData) => {
+        setIsLoading(true);
+        setResult(null);
+        try {
+            const response = await api.post('/shorten', formData);
+            setResult(response.data);
+            toast.success('URL shortened successfully!');
+            // Trigger table reload
+            setReloadTrigger(prev => prev + 1);
+        } catch (error) {
+            toast.error(error.message || 'Failed to shorten URL');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <main className="container">
+            <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>
+                    Short links, <span className="gradient-text">big results</span>
+                </h1>
+                <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto' }}>
+                    A powerful URL shortener with analytics, custom aliases, and QR codes. Built for performance and reliability.
+                </p>
+            </div>
+
+            <div className="dashboard-grid">
+                <ShortenForm onShorten={handleShorten} isLoading={isLoading} />
+                {result && <ResultCard result={result} />}
+            </div>
+
+            <UrlTable reloadTrigger={reloadTrigger} />
+        </main>
+    );
+};
 
 function App() {
-  const [result, setResult] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [reloadTrigger, setReloadTrigger] = useState(0);
+  const { user, loading } = useContext(AuthContext);
 
-  const handleShorten = async (formData) => {
-    setIsLoading(true);
-    setResult(null);
-    try {
-      const response = await api.post('/shorten', formData);
-      setResult(response.data);
-      toast.success('URL shortened successfully!');
-      // Trigger table reload
-      setReloadTrigger(prev => prev + 1);
-    } catch (error) {
-      toast.error(error.message || 'Failed to shorten URL');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  if (loading) {
+      return <div className="container" style={{ textAlign: 'center', marginTop: '2rem' }}>Loading...</div>;
+  }
 
   return (
     <>
       <Header />
-      <main className="container">
-        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>
-            Short links, <span className="gradient-text">big results</span>
-          </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto' }}>
-            A powerful URL shortener with analytics, custom aliases, and QR codes. Built for performance and reliability.
-          </p>
-        </div>
-
-        <div className="dashboard-grid">
-          <ShortenForm onShorten={handleShorten} isLoading={isLoading} />
-          {result && <ResultCard result={result} />}
-        </div>
-
-        <UrlTable reloadTrigger={reloadTrigger} />
-      </main>
+      
+      <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={<Navigate to="/" />} />
+          <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
+          <Route path="/register" element={user ? <Navigate to="/" /> : <Register />} />
+      </Routes>
       
       <ToastContainer 
         position="bottom-right" 
