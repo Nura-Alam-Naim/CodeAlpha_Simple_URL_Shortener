@@ -1,74 +1,72 @@
 # CodeAlpha URL Shortener
 
-This is a full-stack, production-quality URL Shortener web application built for the CodeAlpha Backend Development Internship (Task 1).
+This is a full-stack, production-quality URL Shortener web application built for the **CodeAlpha Backend Development Internship (Task 1)**. It features a modern, responsive Glassmorphism UI and supports both authenticated users and anonymous guest sessions.
 
-## Architecture & Tech Stack
+## Features
 
-- **Backend**: Node.js + Express.js API
-- **Frontend**: React (Vite) Single Page Application
-- **Database**: MySQL (using `mysql2` and parameterized queries)
-- **Styling**: Vanilla CSS with modern, glassmorphism design elements
+- **User Authentication**: Secure user registration and login using JWT and bcrypt.
+- **Guest Support**: Anonymous users can create and manage shortened URLs using session tracking without needing an account.
+- **Advanced Dashboard**: View click statistics, recent IP logs, and toggle URLs on/off.
+- **Custom Aliases**: Create custom shortened links (e.g., `/my-link`).
+- **QR Code Generation**: Automatically generates a downloadable QR code for every shortened link.
+- **Expiration Dates**: Optionally set shortened URLs to expire after a certain number of days.
+- **Analytics**: Tracks total clicks, timestamps, IP addresses, and user-agent strings.
+- **Security**: Rate limiting on API routes to prevent abuse, and strict input validation.
 
-## Implemented "Necessary Additions"
+## Tech Stack
 
-1. **Rate Limiting**: `express-rate-limit` is used on `POST /api/shorten` to prevent spam/abuse (Max 20 requests / 15 mins).
-2. **Input Validation**: `express-validator` ensures all inputs (URLs, custom aliases, expiry times) are strictly validated before hitting the database.
-3. **QR Code Generation**: The `qrcode` package dynamically generates a base64 Data URL for shortened links, displayed and copyable in the frontend.
-4. **CORS**: Correctly configured to isolate the API and allow frontend origins.
-5. **Centralized Error Handling**: A unified Express error-handling middleware ensures all exceptions return a consistent JSON shape.
+- **Frontend**: React.js (Vite), Vanilla CSS (Glassmorphism design system)
+- **Backend**: Node.js, Express.js
+- **Database**: MySQL (using `mysql2` with parameterized queries)
+- **Authentication**: JSON Web Tokens (JWT) & bcrypt
 
-## Setup Instructions
+## Getting Started
 
-### 1. Database Setup
-Ensure you have MySQL installed and running locally.
+### Prerequisites
+- Node.js
+- MySQL Server
+
+### 1. Database Configuration
+1. Open your MySQL terminal or GUI and execute the schema file to create the database and tables:
+   ```bash
+   mysql -u root -p < backend/db/schema.sql
+   ```
+2. Navigate to the `backend` directory, install dependencies, and configure your environment:
+   ```bash
+   cd backend
+   npm install
+   cp .env.example .env
+   ```
+3. Open `backend/.env` and update your database credentials (`DB_USER`, `DB_PASSWORD`) and set a secure `JWT_SECRET`.
+
+### 2. Frontend Configuration
+Navigate to the `frontend` directory and install dependencies:
 ```bash
-cd backend
+cd ../frontend
 npm install
-# Copy the env template and set your DB password (e.g. N@im2002)
-cp .env.example .env
-# Create the database and schema
-npm run init-db
 ```
 
-### 2. Run the Application (Frontend & Backend)
-We use `concurrently` in the root folder to start both the backend API and the React frontend simultaneously with a single command.
-
+### 3. Run the Application
+A concurrently script is provided in the root directory to start both servers easily:
 ```bash
-# In the root project directory (CodeAlpha_Simple_URL_Shortener)
+# Return to the root directory
+cd ..
 npm install
 npm run dev
 ```
 
-- The backend API runs on `http://localhost:5001`
-- The React frontend runs on `http://localhost:5173`
+- The React frontend will be available at `http://localhost:5173`
+- The Express backend API will be available at `http://localhost:5000`
 
-## API Documentation
+## API Endpoints
 
-### `POST /api/shorten`
-Shortens a URL.
-- **Body**: `{ "url": "https://example.com", "customCode": "optional-alias", "expiresInDays": 7 }`
-- **Response**: `{ "shortUrl": "...", "originalUrl": "...", "shortCode": "...", "expiresAt": "...", "qrCode": "..." }`
-
-### `GET /:shortCode`
-Redirects to the original URL and tracks the click (IP & User Agent).
-- **Response**: `302 Redirect` or `404/410 Not Found/Expired`
-
-### `GET /api/urls?page=1&limit=10&search=`
-Fetches paginated, searchable URLs for the dashboard table.
-- **Response**: `{ "data": [...], "page": 1, "limit": 10, "total": 5, "totalPages": 1 }`
-
-### `DELETE /api/urls/:shortCode`
-Soft-deletes a shortened URL so it no longer functions.
-- **Response**: `{ "message": "URL deleted successfully" }`
-
-### `GET /api/stats/:shortCode`
-Retrieves click logs and analytics for a single URL.
-- **Response**: URL object plus `recent_logs` array.
-
-## Testing the Flow
-You can use the provided automated script to test the backend API flow without the UI.
-```bash
-cd backend
-node testFlow.js
-```
-Or simply open the React app in your browser and use the interface!
+- `POST /api/auth/register` - Register a new user
+- `POST /api/auth/login` - Login to receive a JWT
+- `GET /api/auth/me` - Get current user profile
+- `POST /api/shorten` - Create a new shortened URL
+- `GET /:shortCode` - Redirect to original URL
+- `GET /api/urls` - Get paginated list of user/guest URLs
+- `GET /api/stats/:shortCode` - Get click analytics for a specific URL
+- `PUT /api/urls/:shortCode/activate` - Start tracking a stopped URL
+- `PUT /api/urls/:shortCode/deactivate` - Stop a URL from redirecting
+- `DELETE /api/urls/:shortCode` - Permanently delete a URL and its analytics

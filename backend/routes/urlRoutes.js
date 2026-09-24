@@ -16,7 +16,10 @@ const { protect, optionalProtect } = require('../middleware/authMiddleware');
 router.post('/shorten', shortenLimiter, optionalProtect, validateUrlInput, shortenUrl);
 
 // GET /api/urls
-router.get('/urls', optionalProtect, getAllUrls);
+router.get('/urls', optionalProtect, (req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    next();
+}, getAllUrls);
 
 // GET /api/stats/:shortCode
 router.get('/stats/:shortCode', optionalProtect, getStats);

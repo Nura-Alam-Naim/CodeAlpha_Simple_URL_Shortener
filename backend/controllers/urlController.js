@@ -71,15 +71,18 @@ const redirectUrl = async (req, res, next) => {
         const urlEntry = await UrlModel.findByShortCode(shortCode);
 
         if (!urlEntry) {
+            res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
             return res.status(404).send('URL not found');
         }
 
         if (!urlEntry.is_active) {
+            res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
             return res.status(410).send('URL has been deleted or deactivated');
         }
 
         if (urlEntry.expires_at && new Date() > new Date(urlEntry.expires_at)) {
             await UrlModel.deactivate(urlEntry.id);
+            res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
             return res.status(410).send('URL has expired');
         }
 
@@ -89,6 +92,7 @@ const redirectUrl = async (req, res, next) => {
         const userAgent = req.get('User-Agent') || '';
         await UrlModel.logClick(urlEntry.id, ip, userAgent);
 
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
         res.redirect(302, urlEntry.original_url);
     } catch (error) {
         next(error);
