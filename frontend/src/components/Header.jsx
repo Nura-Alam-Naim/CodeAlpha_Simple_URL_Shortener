@@ -12,7 +12,7 @@ const Header = () => {
                 <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
                     <div className="logo">
                         <LinkIcon className="gradient-text" size={28} />
-                        <span><span className="gradient-text">CodeAlpha</span> URL Shortener</span>
+                        <span className="gradient-text">URL Shortener</span>
                     </div>
                 </Link>
                 <div className="nav-links">

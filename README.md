@@ -1,6 +1,6 @@
-# CodeAlpha URL Shortener
+# URL Shortener
 
-This is a full-stack, production-quality URL Shortener web application built for the **CodeAlpha Backend Development Internship (Task 1)**. It features a modern, responsive Glassmorphism UI and supports both authenticated users and anonymous guest sessions.
+This is a full-stack, production-quality URL Shortener web application. It features a modern, responsive Glassmorphism UI and supports both authenticated users and anonymous guest sessions.
 
 ## Features
 

@@ -1,7 +1,7 @@
 {
-  "name": "codealpha_simple_url_shortener",
+  "name": "simple_url_shortener",
   "version": "1.0.0",
-  "description": "This is a full-stack, production-quality URL Shortener web application built for the CodeAlpha Backend Development Internship (Task 1).",
+  "description": "This is a full-stack, production-quality URL Shortener web application.",
   "main": "index.js",
   "scripts": {
     "dev": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
@@ -9,15 +9,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Nura-Alam-Naim/CodeAlpha_Simple_URL_Shortener.git"
+    "url": "git+https://github.com/Nura-Alam-Naim/Simple_URL_Shortener.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Nura-Alam-Naim/CodeAlpha_Simple_URL_Shortener/issues"
+    "url": "https://github.com/Nura-Alam-Naim/Simple_URL_Shortener/issues"
   },
-  "homepage": "https://github.com/Nura-Alam-Naim/CodeAlpha_Simple_URL_Shortener#readme",
+  "homepage": "https://github.com/Nura-Alam-Naim/Simple_URL_Shortener#readme",
   "devDependencies": {
     "concurrently": "^10.0.5"
   }
